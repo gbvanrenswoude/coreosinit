@@ -1,0 +1,60 @@
+---
+- name: setup python for coreos
+  raw: "[ -f /opt/bin/python2 ] && echo 'installed' || echo 'missing'"
+  register: py2_check
+
+- name: check docker service.d dir
+  raw: "[ -d /etc/systemd/system/docker.service.d ] && echo 'direxists' || echo 'dirmissing'"
+  register: sys_check
+
+- name: make docker dir
+  raw: "sudo mkdir /etc/systemd/system/docker.service.d"
+  when: sys_check.stdout_lines[0] == "dirmissing"
+
+- name: set proxy settings
+  raw: sudo echo -e "[Service] \n
+        Environment=\"HTTP_PROXY=http://forward-proxy.prd.ss.aws.insim.biz:8080\" \n
+        Environment=\"HTTPS_PROXY=http://forward-proxy.prd.ss.aws.insim.biz:8080\" \n
+        Environment=\"http_proxy=http://forward-proxy.prd.ss.aws.insim.biz:8080\" \n
+        Environment=\"https_proxy=http://forward-proxy.prd.ss.aws.insim.biz:8080\"" > /etc/systemd/system/docker.service.d/http-proxy.conf
+  when: sys_check.stdout_lines[0] == "dirmissing"
+
+- name: reload docker deamon
+  raw: sudo systemctl daemon-reload
+  when: sys_check.stdout_lines[0] != "installed"
+
+- name: restart docker
+  raw: sudo systemctl restart docker
+  when: sys_check.stdout_lines[0] != "installed"
+
+- name: download python package from s3
+  raw: docker run --rm -v /tmp:/tmp mesosphere/aws-cli s3 cp s3://nn-s3-binaryrepository/activePython/ActivePython-3.6.0.3600-linux-x86_64-glibc-2.3.6-401834.tar.gz /tmp/activePython/ActivePython-3.6.0.3600-linux-x86_64-glibc-2.3.6-401834.tar.gz --region eu-west-1
+  when: py2_check.stdout_lines[0] != "installed"
+
+- name: unzip ActivePython
+  raw: tar -xvf /tmp/activePython/{{ap_python2_package_file_name}}
+  when: py2_check.stdout_lines[0] != "installed"
+
+- name: create the resulting directory for ActivePython
+  become: true
+  raw: 'mkdir -p /opt/bin/active_python'
+  when: py2_check.stdout_lines[0] != "installed"
+
+- name: install ActivePython
+  become: true
+  raw: 'cd {{ap_python2_package_name}} && ./install.sh -I /opt/bin/active_python'
+  when: py2_check.stdout_lines[0] != "installed"
+
+# Setup links
+- name: link easy_install
+  become: true
+  raw: ln -sf /opt/bin/active_python/bin/easy_install /opt/bin/easy_install
+  when: py2_check.stdout_lines[0] != "installed"
+- name: link pip
+  become: true
+  raw: ln -sf /opt/bin/active_python/bin/pip3 /opt/bin/pip
+  when: py2_check.stdout_lines[0] != "installed"
+- name: link python
+  become: true
+  raw: ln -sf /opt/bin/active_python/bin/python3 /opt/bin/python
+  when: py2_check.stdout_lines[0] != "installed"

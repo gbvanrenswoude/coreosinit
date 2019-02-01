@@ -1,0 +1,15 @@
+---
+- name: setup python for coreos to run all ansible modules
+  hosts: coreos
+  gather_facts: False
+  environment:
+    http_proxy: "http://some-proxy.com:8080"
+    https_proxy: "http://some-proxy.com:8080"
+    no_proxy: "169.254.169.254,.internal.company.com"
+  become: yes
+  become_method: sudo
+  roles:
+    - role: coreosinit
+      tags: coreosinit # run this first
+    # - role: someotherrole
+    #   tags: someotherrole
