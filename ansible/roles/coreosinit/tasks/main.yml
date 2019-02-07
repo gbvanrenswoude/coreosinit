@@ -28,7 +28,7 @@
   when: sys_check.stdout_lines[0] != "installed"
 
 - name: download python package from s3
-  raw: docker run --rm -v /tmp:/tmp mesosphere/aws-cli s3 cp s3://nn-s3-binaryrepository/activePython/ActivePython-3.6.0.3600-linux-x86_64-glibc-2.3.6-401834.tar.gz /tmp/activePython/ActivePython-3.6.0.3600-linux-x86_64-glibc-2.3.6-401834.tar.gz --region eu-west-1
+  raw: docker run --rm -v /tmp:/tmp mesosphere/aws-cli s3 cp s3://{{your_s3_bucket}}/activePython/ActivePython-3.6.0.3600-linux-x86_64-glibc-2.3.6-401834.tar.gz /tmp/activePython/ActivePython-3.6.0.3600-linux-x86_64-glibc-2.3.6-401834.tar.gz --region eu-west-1
   when: py2_check.stdout_lines[0] != "installed"
 
 - name: unzip ActivePython
