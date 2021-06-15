@@ -13,10 +13,10 @@
 
 - name: set proxy settings
   raw: sudo echo -e "[Service] \n
-        Environment=\"HTTP_PROXY=http://forward-proxy.prd.ss.aws.insim.biz:8080\" \n
-        Environment=\"HTTPS_PROXY=http://forward-proxy.prd.ss.aws.insim.biz:8080\" \n
-        Environment=\"http_proxy=http://forward-proxy.prd.ss.aws.insim.biz:8080\" \n
-        Environment=\"https_proxy=http://forward-proxy.prd.ss.aws.insim.biz:8080\"" > /etc/systemd/system/docker.service.d/http-proxy.conf
+        Environment=\"HTTP_PROXY=http://corp-proxy.com:8080\" \n
+        Environment=\"HTTPS_PROXY=http://corp-proxy.com:8080\" \n
+        Environment=\"http_proxy=http://corp-proxy.com:8080\" \n
+        Environment=\"https_proxy=http://corp-proxy.com:8080\"" > /etc/systemd/system/docker.service.d/http-proxy.conf
   when: sys_check.stdout_lines[0] == "dirmissing"
 
 - name: reload docker deamon
